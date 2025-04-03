@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 
+// type of user data json
 export interface User_type {
     id: number;
     name: string;
@@ -12,6 +13,7 @@ export interface User_type {
 @Controller('users') //decorator this will handle users route
 export class UsersController {
     /*
+    these are the routs we are going to define
     GET  /users
     Get  /users/:id
     post /users
@@ -19,6 +21,8 @@ export class UsersController {
     delete /users/:id
     */
 
+    // to use the function of userservices we have to define its object i.e userservice= new UserService 
+    // but in nestjs we can find our object , in nestjs way i.e in constructor
     constructor(private readonly usersService:UsersService){}
 
     @Get()  // GET /users or /user?role=value
@@ -30,6 +34,8 @@ export class UsersController {
     @Get(':id') //GET /users/:id
     findOne(@Param('id') id: string): User_type | undefined {
         const user = this.usersService.findOne(+id); // convert string to number
+
+        // is id is not there then throw an error
         if (!user) {
             throw new Error(`User with id ${id} not found`);
         }
@@ -45,6 +51,7 @@ export class UsersController {
     update(@Param('id') id:string, @Body() userUpdate:{ name?: string; email?: string; role?: 'intern' | 'admin' | 'engineer' }): User_type {
         const updatedUser = this.usersService.update(+id, userUpdate);
         
+        // if id is not found throw an error
         if (!updatedUser) {
             throw new Error(`User with id ${id} not found`);
         }
@@ -54,6 +61,8 @@ export class UsersController {
     @Delete(':id')
     delete(@Param('id') id: string): { success: boolean; message: string } {
         const deletedUser = this.usersService.delete(+id);
+        
+        // if id is not found throw an error
         if (!deletedUser) {
             return { success: false, message: `User with id ${id} not found` };
         }
