@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto';
+import { updatedUserDto } from './dto/update-users.dto';
 
+import { NotFoundException } from '@nestjs/common';
 interface User_type {
     id: number;
     name: string;
@@ -22,16 +25,24 @@ export class UsersService {
     // return all the data or if you provide role it will return role specific data
     // if you Send req like localhost:3000/users?role=admin this will return admin data
     findAll(role?: 'intern' | 'admin' | 'engineer'): User_type[] {
-        return role ? this.users.filter(user => user.role === role) : this.users;
+        const role1 = this.users.filter(user => user.role === role) ;
+        if (role1.length === 0) {
+            throw new NotFoundException(`No user found with role ${role}`);
+        }
+        return role ? role1 : this.users;
     }
 
     // find user with specific id
     findOne(id: number): User_type | undefined {
-        return this.users.find(user => user.id === id);
+        const user= this.users.find(user => user.id === id);
+        if (!user) {
+            throw new NotFoundException(`User with id ${id} not found`);
+        }
+        return user;
     }
 
     //  this will create new user and create new id accoding to id present in database
-    create(user: { name: string; email: string; role: 'intern' | 'admin' | 'engineer' }): User_type {
+    create(user: CreateUserDto): User_type {
         const userByHighestId = [...this.users].sort((a, b) => b.id - a.id);
         const newUser: User_type = {
             id: this.users.length > 0 ? userByHighestId[0].id + 1 : 1,
@@ -42,7 +53,7 @@ export class UsersService {
     }
 
     //  update user data , you have to provide id and data
-    update(id: number, updateUser: { name?: string; email?: string; role?: 'intern' | 'admin' | 'engineer' }): User_type | undefined {
+    update(id: number, updateUser: updatedUserDto): User_type | undefined {
         let updatedUser: User_type | undefined;
         this.users = this.users.map(user => {
             if (user.id === id) {

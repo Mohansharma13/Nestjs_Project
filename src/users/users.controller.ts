@@ -1,5 +1,10 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { ParseIntPipe ,ValidationPipe} from '@nestjs/common';
+
+import { CreateUserDto } from './dto/create-user.dto';
+import { updatedUserDto } from './dto/update-users.dto';
+
 
 // type of user data json
 export interface User_type {
@@ -8,6 +13,8 @@ export interface User_type {
     email: string;
     role: 'intern' | 'admin' | 'engineer';
 }
+
+
 
 // decorators are function that start with @ , and they run automaticlly when called
 @Controller('users') //decorator this will handle users route
@@ -32,8 +39,8 @@ export class UsersController {
 
 
     @Get(':id') //GET /users/:id
-    findOne(@Param('id') id: string): User_type | undefined {
-        const user = this.usersService.findOne(+id); // convert string to number
+    findOne(@Param('id',ParseIntPipe) id: number): User_type | undefined {
+        const user = this.usersService.findOne(id); // convert string to number
 
         // is id is not there then throw an error
         if (!user) {
@@ -43,13 +50,13 @@ export class UsersController {
     }
 
     @Post() //post /users
-    create(@Body() user:{ name: string; email: string; role: 'intern' | 'admin' | 'engineer' }): User_type {
+    create(@Body(ValidationPipe) user:CreateUserDto): User_type {
         return this.usersService.create(user)
     }
 
     @Patch(':id') // patch /user/:id
-    update(@Param('id') id:string, @Body() userUpdate:{ name?: string; email?: string; role?: 'intern' | 'admin' | 'engineer' }): User_type {
-        const updatedUser = this.usersService.update(+id, userUpdate);
+    update(@Param('id',ParseIntPipe) id:number, @Body(ValidationPipe) userUpdate:updatedUserDto): User_type {
+        const updatedUser = this.usersService.update(id, userUpdate);
         
         // if id is not found throw an error
         if (!updatedUser) {
@@ -59,8 +66,8 @@ export class UsersController {
     }
 
     @Delete(':id')
-    delete(@Param('id') id: string): { success: boolean; message: string } {
-        const deletedUser = this.usersService.delete(+id);
+    delete(@Param('id',ParseIntPipe) id: number): { success: boolean; message: string } {
+        const deletedUser = this.usersService.delete(id);
         
         // if id is not found throw an error
         if (!deletedUser) {
