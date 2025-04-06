@@ -1,7 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete,Query } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { Prisma } from '@prisma/client';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle() // 5 requests per minute
 @Controller('employees') //localhost:3000/employees
 export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
@@ -13,12 +15,12 @@ export class EmployeesController {
     // we can also use dto class for validation 
     return this.employeesService.create(createEmployeeDto);
   }
-
+  @SkipThrottle({defaults:false}) // only limit throttle for this endpoint only 
   @Get()
   findAll(@Query('role') role?: 'intern' | 'admin' | 'engineer') {
     return this.employeesService.findAll(role);
   }
-
+  
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.employeesService.findOne(+id);
